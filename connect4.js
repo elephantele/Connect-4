@@ -1,145 +1,183 @@
-var playerRed = "R";
-var playerYellow = "Y";
-var currPlayer;
+const rows = 6;
+const columns = 7;
 
-var gameOver = false;
-var board;
+let board = [];
+let currColumns = [];
+let currentPlayer = null;
+let playerColor = null;
+let computerColor = null;
+let gameOver = false;
 
-var rows = 6;
-var columns = 7;
-var currColumns = []; //keeps track of which row each column is at
+// UI elements
+const welcome = document.getElementById("welcome");
+const playBtn = document.getElementById("playBtn");
 
-//Start only after color is chosen by the user
-function chooseColor(color){
-    if(color == "R"){
-        currPlayer = playerRed;
-        document.getElementById("turn").innerText = "Red's Turn";
+const setup = document.getElementById("setup");
+const game = document.getElementById("game");
+const boardEl = document.getElementById("board");
+const turnDisplay = document.getElementById("turnDisplay");
+const winnerEl = document.getElementById("winner");
+
+// Play button → go to color selection
+playBtn.addEventListener("click", () => {
+    welcome.classList.add("hidden");
+    setup.classList.remove("hidden");
+});
+
+// Color selection
+document.querySelectorAll(".color-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        startGame(btn.dataset.color);
+    });
+});
+
+function startGame(color) {
+    playerColor = color;
+    computerColor = (color === "Red") ? "Yellow" : "Red";
+
+    currentPlayer = "Red"; // Red always starts
+    gameOver = false;
+
+    setup.classList.add("hidden");
+    game.classList.remove("hidden");
+
+    initBoard();
+    updateTurnDisplay();
+
+    if (currentPlayer === computerColor) {
+        setTimeout(computerMove, 500);
     }
-    else{
-        currPlayer = playerYellow;
-        document.getElementById("turn").innerText = "Yellow's Turn";
-    }
-
-    document.getElementById("color-select").style.display = "none";
-    document.getElementById("board").style.display = "flex";
-
-    setGame();
 }
 
-window.onload = function() {
-    setGame();
-}
-
-function setGame() {
+function initBoard() {
     board = [];
-    currColumns = [5, 5, 5, 5, 5, 5, 5];
+    currColumns = new Array(columns).fill(rows - 1);
+    boardEl.innerHTML = "";
+    winnerEl.innerText = "";
 
     for (let r = 0; r < rows; r++) {
         let row = [];
+
         for (let c = 0; c < columns; c++) {
-            // JS
-            row.push(' ');
-            // HTML
-            let tile = document.createElement("div");
-            tile.id = r.toString() + "-" + c.toString();
+            row.push(" ");
+
+            const tile = document.createElement("div");
+            tile.id = `${r}-${c}`;
             tile.classList.add("tile");
-            tile.addEventListener("click", setPiece);
-            document.getElementById("board").append(tile);
+            tile.addEventListener("click", playerMove);
+            boardEl.appendChild(tile);
         }
+
         board.push(row);
     }
 }
 
-function setPiece() {
-    if (gameOver) {
-        return;
+function updateTurnDisplay() {
+    turnDisplay.innerText = `${currentPlayer}'s Turn`;
+}
+
+function playerMove() {
+    if (gameOver) return;
+    if (currentPlayer !== playerColor) return;
+
+    placePiece(this.id);
+}
+
+function computerMove() {
+    if (gameOver) return;
+
+    let availableCols = currColumns
+        .map((r, c) => (r >= 0 ? c : null))
+        .filter(c => c !== null);
+
+    let c = availableCols[Math.floor(Math.random() * availableCols.length)];
+    let r = currColumns[c];
+
+    placePiece(`${r}-${c}`);
+}
+
+function placePiece(tileId) {
+    const [rStr, cStr] = tileId.split("-");
+    const c = parseInt(cStr);
+    const r = currColumns[c];
+
+    if (r < 0) return;
+
+    board[r][c] = currentPlayer;
+
+    const tile = document.getElementById(`${r}-${c}`);
+    tile.classList.add(currentPlayer === "Red" ? "red-piece" : "yellow-piece");
+
+    currColumns[c] = r - 1;
+
+    if (checkWinner()) return;
+
+    currentPlayer = (currentPlayer === "Red") ? "Yellow" : "Red";
+    updateTurnDisplay();
+
+    if (currentPlayer === computerColor) {
+        setTimeout(computerMove, 500);
     }
-
-    //get coords of that tile clicked
-    let coords = this.id.split("-");
-    let r = parseInt(coords[0]);
-    let c = parseInt(coords[1]);
-
-    // figure out which row the current column should be on
-    r = currColumns[c]; 
-
-    if (r < 0) { // board[r][c] != ' '
-        return;
-    }
-
-    board[r][c] = currPlayer; //update JS board
-    let tile = document.getElementById(r.toString() + "-" + c.toString());
-    if (currPlayer == playerRed) {
-        tile.classList.add("red-piece");
-        currPlayer = playerYellow;
-    }
-    else {
-        tile.classList.add("yellow-piece");
-        currPlayer = playerRed;
-    }
-
-    r -= 1; //update the row height for that column
-    currColumns[c] = r; //update the array
-
-    checkWinner();
 }
 
 function checkWinner() {
-     // horizontal
-     for (let r = 0; r < rows; r++) {
-         for (let c = 0; c < columns - 3; c++){
-            if (board[r][c] != ' ') {
-                if (board[r][c] == board[r][c+1] && board[r][c+1] == board[r][c+2] && board[r][c+2] == board[r][c+3]) {
-                    setWinner(r, c);
-                    return;
-                }
+    // Horizontal →
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns - 3; c++) {
+            if (board[r][c] !== " " &&
+                board[r][c] === board[r][c+1] &&
+                board[r][c+1] === board[r][c+2] &&
+                board[r][c+2] === board[r][c+3]) {
+                setWinner(r, c);
+                return true;
             }
-         }
+        }
     }
 
-    // vertical
+    // Vertical ↓
     for (let c = 0; c < columns; c++) {
         for (let r = 0; r < rows - 3; r++) {
-            if (board[r][c] != ' ') {
-                if (board[r][c] == board[r+1][c] && board[r+1][c] == board[r+2][c] && board[r+2][c] == board[r+3][c]) {
-                    setWinner(r, c);
-                    return;
-                }
+            if (board[r][c] !== " " &&
+                board[r][c] === board[r+1][c] &&
+                board[r+1][c] === board[r+2][c] &&
+                board[r+2][c] === board[r+3][c]) {
+                setWinner(r, c);
+                return true;
             }
         }
     }
 
-    // anti diagonal
+    // Diagonal ↘
     for (let r = 0; r < rows - 3; r++) {
         for (let c = 0; c < columns - 3; c++) {
-            if (board[r][c] != ' ') {
-                if (board[r][c] == board[r+1][c+1] && board[r+1][c+1] == board[r+2][c+2] && board[r+2][c+2] == board[r+3][c+3]) {
-                    setWinner(r, c);
-                    return;
-                }
+            if (board[r][c] !== " " &&
+                board[r][c] === board[r+1][c+1] &&
+                board[r+1][c+1] === board[r+2][c+2] &&
+                board[r+2][c+2] === board[r+3][c+3]) {
+                setWinner(r, c);
+                return true;
             }
         }
     }
 
-    // diagonal
+    // Diagonal ↗
     for (let r = 3; r < rows; r++) {
         for (let c = 0; c < columns - 3; c++) {
-            if (board[r][c] != ' ') {
-                if (board[r][c] == board[r-1][c+1] && board[r-1][c+1] == board[r-2][c+2] && board[r-2][c+2] == board[r-3][c+3]) {
-                    setWinner(r, c);
-                    return;
-                }
+            if (board[r][c] !== " " &&
+                board[r][c] === board[r-1][c+1] &&
+                board[r-1][c+1] === board[r-2][c+2] &&
+                board[r-2][c+2] === board[r-3][c+3]) {
+                setWinner(r, c);
+                return true;
             }
         }
     }
+
+    return false;
 }
 
 function setWinner(r, c) {
-    let winner = document.getElementById("winner");
-    if (board[r][c] == playerRed) {
-        winner.innerText = "Red Wins";             
-    } else {
-        winner.innerText = "Yellow Wins";
-    }
+    let winner = board[r][c];
+    winnerEl.innerText = `${winner} Wins!`;
     gameOver = true;
 }
