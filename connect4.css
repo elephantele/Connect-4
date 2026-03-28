@@ -1,40 +1,137 @@
+/* GENERAL PAGE LAYOUT */
+body {
+    margin: 0;
+    padding: 0;
+    background: #0d1b2a;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* HIDDEN CLASS */
+.hidden {
+    display: none;
+}
+
+/* WELCOME SCREEN */
+#welcome {
+    text-align: center;
+}
+
+#welcome h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+#playBtn {
+    padding: 12px 30px;
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 8px;
+    background: #fcbf49;
+    color: black;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#playBtn:hover {
+    background: #ffd46b;
+}
+
+/* COLOR SELECTION */
+#setup {
+    text-align: center;
+}
+
+#setup h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.color-btn {
+    padding: 12px 30px;
+    margin: 10px;
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.color-btn.red {
+    background: #d62828;
+    color: white;
+}
+
+.color-btn.red:hover {
+    background: #e63939;
+}
+
+.color-btn.yellow {
+    background: #fcbf49;
+    color: black;
+}
+
+.color-btn.yellow:hover {
+    background: #ffd86b;
+}
+
+/* GAME AREA */
+#game {
+    text-align: center;
+}
+
+#turnDisplay {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+}
+
+/* BOARD GRID */
 #board {
-    height: 540px;
-    width: 630px;
-    background-color: blue;
-    border: 10px solid navy;
+    width: 560px;
+    height: 480px;
+    background: #1b263b;
+    border: 8px solid #415a77;
+    border-radius: 10px;
 
-    margin: 20px auto;
-    display: none; /* hidden until color is chosen */
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 6px;
+
+    padding: 10px;
+    margin: 0 auto;
 }
 
+/* TILES */
 .tile {
-    height: 70px;
-    width: 70px;
-    margin: 5px;
-
-    background-color: white;
+    width: 100%;
+    height: 100%;
+    background: #0d1b2a;
     border-radius: 50%;
-    border: 5px solid navy;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
+.tile:hover {
+    background: #1e3a5f;
+}
+
+/* PIECES */
 .red-piece {
-    background-color: red;
+    background: #d62828 !important;
 }
 
 .yellow-piece {
-    background-color: yellow;
+    background: #fcbf49 !important;
 }
 
-#color-select {
-    text-align: center;
+/* WINNER TEXT */
+#winner {
     margin-top: 20px;
-}
-
-#color-select button {
-    padding: 10px 20px;
-    margin: 10px;
-    font-size: 16px;
-    cursor: pointer;
+    font-size: 2rem;
+    font-weight: bold;
 }
