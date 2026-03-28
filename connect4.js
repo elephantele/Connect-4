@@ -1,6 +1,8 @@
+// game settings
 const rows = 6;
 const columns = 7;
 
+// game state
 let board = [];
 let currColumns = [];
 let currentPlayer = null;
@@ -8,38 +10,42 @@ let playerColor = null;
 let computerColor = null;
 let gameOver = false;
 
-// UI elements
+// ui elements
 const welcome = document.getElementById("welcome");
 const playBtn = document.getElementById("playBtn");
-
 const setup = document.getElementById("setup");
 const game = document.getElementById("game");
 const boardEl = document.getElementById("board");
 const turnDisplay = document.getElementById("turnDisplay");
 const winnerEl = document.getElementById("winner");
+const restartBtn = document.getElementById("restartBtn");
 
-// Play button → go to color selection
+// play btn for color settings
 playBtn.addEventListener("click", () => {
     welcome.classList.add("hidden");
     setup.classList.remove("hidden");
 });
 
-// Color selection
+// color selection buttons
 document.querySelectorAll(".color-btn").forEach(btn => {
     btn.addEventListener("click", () => {
         startGame(btn.dataset.color);
     });
 });
 
+// start of the game
 function startGame(color) {
     playerColor = color;
     computerColor = (color === "Red") ? "Yellow" : "Red";
 
-    currentPlayer = "Red"; // Red always starts
+    currentPlayer = "Red"; 
     gameOver = false;
 
     setup.classList.add("hidden");
     game.classList.remove("hidden");
+
+    restartBtn.classList.add("hidden");
+    winnerEl.innerText = "";
 
     initBoard();
     updateTurnDisplay();
@@ -49,11 +55,11 @@ function startGame(color) {
     }
 }
 
+// intialize board
 function initBoard() {
     board = [];
     currColumns = new Array(columns).fill(rows - 1);
     boardEl.innerHTML = "";
-    winnerEl.innerText = "";
 
     for (let r = 0; r < rows; r++) {
         let row = [];
@@ -72,10 +78,12 @@ function initBoard() {
     }
 }
 
+// update turn display
 function updateTurnDisplay() {
     turnDisplay.innerText = `${currentPlayer}'s Turn`;
 }
 
+//player move
 function playerMove() {
     if (gameOver) return;
     if (currentPlayer !== playerColor) return;
@@ -83,6 +91,7 @@ function playerMove() {
     placePiece(this.id);
 }
 
+// comp move
 function computerMove() {
     if (gameOver) return;
 
@@ -96,6 +105,7 @@ function computerMove() {
     placePiece(`${r}-${c}`);
 }
 
+// place piece
 function placePiece(tileId) {
     const [rStr, cStr] = tileId.split("-");
     const c = parseInt(cStr);
@@ -120,6 +130,7 @@ function placePiece(tileId) {
     }
 }
 
+// winner check
 function checkWinner() {
     // Horizontal →
     for (let r = 0; r < rows; r++) {
@@ -134,7 +145,7 @@ function checkWinner() {
         }
     }
 
-    // Vertical ↓
+    // vertical ↓
     for (let c = 0; c < columns; c++) {
         for (let r = 0; r < rows - 3; r++) {
             if (board[r][c] !== " " &&
@@ -147,7 +158,7 @@ function checkWinner() {
         }
     }
 
-    // Diagonal ↘
+    // diagonal ↘
     for (let r = 0; r < rows - 3; r++) {
         for (let c = 0; c < columns - 3; c++) {
             if (board[r][c] !== " " &&
@@ -160,7 +171,7 @@ function checkWinner() {
         }
     }
 
-    // Diagonal ↗
+    // diagonal ↗
     for (let r = 3; r < rows; r++) {
         for (let c = 0; c < columns - 3; c++) {
             if (board[r][c] !== " " &&
@@ -176,8 +187,16 @@ function checkWinner() {
     return false;
 }
 
+// set winner
 function setWinner(r, c) {
     let winner = board[r][c];
     winnerEl.innerText = `${winner} Wins!`;
     gameOver = true;
+
+    restartBtn.classList.remove("hidden");
 }
+
+// restart game
+restartBtn.addEventListener("click", () => {
+    startGame(playerColor);
+});
